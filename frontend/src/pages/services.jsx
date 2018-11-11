@@ -10,7 +10,6 @@ import chat from "../img/chat.png";
 import chat2 from "../img/chat2.png";
 import db from "../img/db.png";
 
-
 class services extends Component {
 
   render() {

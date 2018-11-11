@@ -19,6 +19,9 @@ class Navigation extends Component {
             <span>
               <Link to="/developers">Developers</Link>
             </span>
+            <span>
+              <Link to="/usage">Usage</Link>
+            </span>
             <div class="balance" style={{ color: "white", float: "right", paddingRight: "30px" }}> Balance: <b>12400</b> EOSHUB</div>
           </nav>
         </div>
