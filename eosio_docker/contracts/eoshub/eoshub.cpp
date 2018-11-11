@@ -12,7 +12,10 @@ const name hub_name = name("eoshub");
 const float inflation_rate_per_year = .2f;
 const float seconds_per_year = 31557600;
 // this should be based on a compounding interest formula to figure out the spot inflation
-const float inflation_rate_per_second = inflation_rate_per_year * seconds_per_year;
+// const float inflation_rate_per_second = inflation_rate_per_year * seconds_per_year;
+
+// for the hackathon demo we'll set this to something that demonstrates earnings
+const float inflation_rate_per_second = .001f;
 
 class [[eosio::contract]] eoshub : public eosio::contract {
     private:            
@@ -23,15 +26,29 @@ class [[eosio::contract]] eoshub : public eosio::contract {
         std::string description;
         std::string url;
 
+        std::string unit;
+        float unit_price; // hub per unit
+
         auto primary_key() const { return owner.value; }
     };
     typedef eosio::multi_index<name("services"), service> services_index;
 
 
-    struct registration {
-        uint64_t serviceKey;
-        std::string apiKey;        
+    struct [[eosio::table("subscribers")]] subscription {
+        uint64_t id;
+        name client;
+        name service;
+        asset amount_staked;
+
+        auto primary_key() const { return id; }
+        uint64_t by_client() const {return client.value; }
+        uint64_t by_service() const { return service.value; }
     };
+
+    typedef eosio::multi_index<name("subscribers"), subscription, 
+            indexed_by <name("byclient"), const_mem_fun<subscription, uint64_t, &subscription::by_client>>,
+            indexed_by <name("byservice"), const_mem_fun<subscription, uint64_t, &subscription::by_service>>
+    > subscription_index;
 
     struct [[eosio::table("accounts")]] account {
         name owner;
@@ -42,10 +59,40 @@ class [[eosio::contract]] eoshub : public eosio::contract {
         asset delegated_balance;
 
         uint64_t last_collection_time;
-
         auto primary_key() const { return owner.value; }
 
-        float total_stake() const { return  staked_balance.amount + delegated_balance.amount; } 
+
+        static inline auto stake_spent(name scope, name account) {
+            auto spent = asset(0, hub_symbol);
+
+            subscription_index subscribers(scope, scope.value);
+            auto byclient = subscribers.get_index<name("byclient")>();
+
+            for (auto itr = byclient.find(account.value); itr != byclient.end(); itr++) {
+                spent += itr->amount_staked;
+            }
+            return spent;
+        }
+
+        static inline auto available_stake(name scope, name account) {
+            accounts_index accounts(scope, scope.value);
+            auto itr = accounts.find(account.value);
+
+            return itr->staked_balance - stake_spent(scope, account);
+        }
+
+        static inline auto earning_stake(name scope, name account) {             
+            auto income = asset(0, hub_symbol);
+
+            subscription_index subscribers(scope, scope.value);
+            auto byservice = subscribers.get_index<name("byservice")>();
+
+            for (auto itr = byservice.find(account.value); itr != byservice.end(); itr++) {
+                income += itr->amount_staked;
+            }
+
+            return available_stake(scope,account) + income;         
+        } 
     };
     typedef eosio::multi_index<name("accounts"), account> accounts_index;
 
@@ -107,14 +154,56 @@ class [[eosio::contract]] eoshub : public eosio::contract {
     }
 
     // regapikey stakes a certain amount of eoshub with the service tied to an EOS public key
-    [[eosio::action]] void regapikey(std::string key, asset delegateAmount, name service) {
+    [[eosio::action]] void regapikey(name client, name service, asset delegateAmount) {
+        require_auth(client);
 
+        accounts_index accounts(_self,  _self.value);
+        auto clientitr = accounts.find(client.value);
+        eosio_assert(clientitr != accounts.end(), "account not found");
+        
+        auto svcitr = accounts.find(service.value);
+        eosio_assert(svcitr != accounts.end(), "service not found");
 
+        //todo use eosio custom permission or actually validate ecc
+
+        print("unstakedBalance: ", clientitr->balance, "\n");
+        print("stakedBalance: ", clientitr->staked_balance, "\n");
+        print("availableStake: ", account::available_stake(_self, client), "\n");
+        print("stakeSpent: ", account::stake_spent(_self, client), "\n");
+        print("earningStake: ", account::earning_stake(_self, client), "\n");
+
+        eosio_assert(delegateAmount.symbol == clientitr->staked_balance.symbol, "incorrect symbol");
+        eosio_assert(delegateAmount.is_valid(), "delegateAmount is not valid");
+        eosio_assert(delegateAmount.amount > 0 , "delegateAmount must be positive");
+        eosio_assert(delegateAmount.amount <= account::available_stake(_self, client).amount, "insufficient funds");
+
+        // add registration to the table
+        subscription_index registrations(_self, _self.value);
+        registrations.emplace(_self, [&](auto &r) {
+            r.id = registrations.available_primary_key();
+            r.client = client;
+            r.service = service;
+            r.amount_staked = delegateAmount;
+        });
     }
 
     // unregapikey unstakes an amount of eoshub with the service
-    [[eosio::action]] void unregapikey(name client, asset delegateAmount, name service) {
+    [[eosio::action]] void unregapikey(name client, name service, uint64_t registrationId) {
+        accounts_index accounts(_self,  _self.value);
+        auto clientitr = accounts.find(client.value);
+        eosio_assert(clientitr != accounts.end(), "account not found");
         
+        auto svcitr = accounts.find(service.value);
+        eosio_assert(svcitr != accounts.end(), "service not found");
+
+        //todo use eosio custom permission or actually validate ecc
+        // eosio_assert(key != "", "key must be a valid eos public key");
+
+        subscription_index registrations(_self, _self.value);
+
+        auto itr = registrations.find(registrationId);
+        eosio_assert( itr != registrations.end(), "registration not found");
+        registrations.erase(itr);
     }
 
     // collectreward collects earnings from shares since account.last_collected_time
@@ -126,29 +215,29 @@ class [[eosio::contract]] eoshub : public eosio::contract {
         eosio_assert(itr != accounts.end(), "account not found");
 
         auto hub_token_supply = token::get_supply(name("eosio.token"), hub_symbol.code());
-        float earningRatio = itr->total_stake() / float(hub_token_supply.amount);
-        auto earningPeriod = now() - itr->last_collection_time; //number of seconds since last collection
-        auto totalEarningsThisPeriod = (hub_token_supply.amount * inflation_rate_per_second) * earningPeriod;
+        float earning_ratio = float(account::earning_stake(_self, user).amount) / float(hub_token_supply.amount);
+        auto earning_period = now() - itr->last_collection_time; //number of seconds since last collection
+        auto total_earnings_this_period = (hub_token_supply.amount * inflation_rate_per_second) * earning_period;
 
-        auto sharesEarned = totalEarningsThisPeriod * earningRatio;
+        auto shares_earned = total_earnings_this_period * earning_ratio;
 
-        print("supply: ", hub_token_supply.amount, "\n");
-        print("totalStake: ", itr->total_stake(), "\n");
-        print("earningRatio: ", earningRatio, "\n");
-        print("earningPeriod: ", earningPeriod,"\n");
-        print("totalEarningsThisPeriod: ", totalEarningsThisPeriod,"\n");
-        print("sharesEarned: ", sharesEarned,"\n");
+        print("supply: ", hub_token_supply, "\n");
+        print("earningStake: ", account::earning_stake(_self, user), "\n");
+        print("earningRatio: ", earning_ratio, "\n");
+        print("earningPeriod: ", earning_period,"\n");
+        print("totalEarningsThisPeriod: ", total_earnings_this_period,"\n");
+        print("sharesEarned: ", shares_earned,"\n");
 
-        eosio_assert(sharesEarned > 0, "no shares earned");
+        eosio_assert(shares_earned > 0, "no shares earned");
 
-        auto assetEarned = asset(sharesEarned * 1000, hub_symbol);
+        auto asset_earned = asset(shares_earned * 1000, hub_symbol);
 
         // issue shares w/ inline action
         action{
             permission_level{name("eosio"), name("active")},
             name("eosio.token"),
             name("issue"),
-            std::tuple<name, asset, std::string>{user, assetEarned, "collect rewards " + std::to_string(now())}
+            std::tuple<name, asset, std::string>{user, asset_earned, "collect rewards " + std::to_string(now())}
         }.send();
 
     }
