@@ -83,12 +83,12 @@ class services extends Component {
   
   render() {
     return (
-      <div class="card">
-        <img class="card-img-top" src={this.props.img} alt="Elastic Service" />
-        <div class="card-body">
-          <h5 class="card-title">{this.props.title}</h5>
-          <p class="card-text">{this.props.desc} </p>
-          <div class="slider">
+      <div className="card">
+        <img className="card-img-top" src={this.props.img} alt="Elastic Service" />
+        <div className="card-body">
+          <h5 className="card-title">{this.props.title}</h5>
+          <p className="card-text">{this.props.desc} </p>
+          <div className="slider">
             <p>Requests per Month: {this.state.requests}</p>
             <Slider
               min={1000}
@@ -99,7 +99,7 @@ class services extends Component {
               handle={this.handle}
             />
           </div>
-          <a id="elastic" class="btn btn-primary" style={{ color: "white" }}>
+          <a id="elastic" className="btn btn-primary" style={{ color: "white" }}>
             Stake {parseFloat(this.state.requests * 0.000001).toFixed(4)} EOSHUB tokens
           </a>
         </div>
