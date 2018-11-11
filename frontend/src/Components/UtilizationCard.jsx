@@ -5,6 +5,8 @@ import { Api, JsonRpc, RpcError, JsSignatureProvider } from 'eosjs'; // https://
 import "rc-slider/assets/index.css";
 import Tooltip from "rc-tooltip";
 import Slider from "rc-slider";
+import Gauge from 'react-svg-gauge';
+// import Gauge from 'react-radial-gauge';
 
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
@@ -84,24 +86,14 @@ class services extends Component {
   render() {
     return (
       <div className="card">
-        <img className="card-img-top" src={this.props.img} alt="Elastic Service" />
         <div className="card-body">
           <h5 className="card-title">{this.props.title}</h5>
-          <p className="card-text">{this.props.desc} </p>
           <div className="slider">
-            <p>Requests per Month: {this.state.requests}</p>
-            <Slider
-              min={1000}
-              max={200000}
-              defaultValue={
-                10000 + Math.round((this.state.iniRequests * Math.random()) / 10000) * 10000
-              }
-              handle={this.handle}
-            />
+            <p>My utilization: {this.state.requests}</p>
+            <div>
+            <Gauge value={ Math.round(Math.random()*100) } width={230} height={180} label="" />
+            </div>
           </div>
-          <a id="elastic" className="btn btn-primary" style={{ color: "white" }}>
-            Stake {parseFloat(this.state.requests * 0.000001).toFixed(4)} EOSHUB tokens
-          </a>
         </div>
       </div>
     );

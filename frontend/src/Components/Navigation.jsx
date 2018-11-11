@@ -6,19 +6,23 @@ import Image from "../img/logo.png";
 class Navigation extends Component {
   render() {
     return (
-      <div class="navigation">
+      <div className="navigation" style={{paddingLeft: '20px'}}>
         <Link to="/">
           <img src={Image} />
         </Link>
-        <div class="menu">
+        <div className="menu">
           <nav>
             <input type="text" placeholder="Search Services" />
             <span>
               <Link to="/services">Services</Link>
             </span>
             <span>
+              <Link to="/utilization">My Utilization</Link>
+            </span>
+            <span>
               <Link to="/developers">Developers</Link>
             </span>
+            <div class="balance" style={{ color: "white", float: "right", paddingRight: "30px" }}> Balance: <b>12400</b> EOSHUB</div>
           </nav>
         </div>
       </div>

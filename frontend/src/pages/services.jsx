@@ -10,14 +10,13 @@ import chat from "../img/chat.png";
 import chat2 from "../img/chat2.png";
 import db from "../img/db.png";
 
-
 class services extends Component {
 
   render() {
     return (
       <div>
         <Navigation />
-        <h1>Select which service to use:</h1>
+        <h1 style={{margin: "30px 20px 10px 30px"}}>Select which service to use:</h1>
         <ServiceCard img={img} title={"Elastic API"} desc={"API leveraging Elastic Search to provide a seach engine for decentralized applications"}></ServiceCard>
         <ServiceCard img={security2} title={"Security API"} desc={"provides a layer of security to verify tokens are valid"}></ServiceCard>
         <ServiceCard img={analy} title={"Analytics API"} desc={"Analytics for your API"}></ServiceCard>
