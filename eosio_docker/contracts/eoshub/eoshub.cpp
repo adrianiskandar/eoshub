@@ -99,14 +99,17 @@ class [[eosio::contract]] eoshub : public eosio::contract {
     using contract::contract;
 
     // regservice registers an eosaccount service listing (metadata about the service etc)
-    [[eosio::action]] void regservice(name owner, std::string description, std::string url) {
+    [[eosio::action]] void regservice(name owner, std::string name, std::string description, std::string url, std::string unit, float unit_price) {
         require_auth(owner);
 
         services_index services(_self, _self.value);
         services.emplace(owner, [&]( auto& svc ) {
             svc.owner = owner;
+            svc.name = name;
             svc.description = description;
             svc.url = url;
+            svc.unit = unit;
+            svc.unit_price = unit_price;            
         });
     }
 
@@ -301,7 +304,7 @@ class [[eosio::contract]] eoshub : public eosio::contract {
         });
     }
 
-    
+
 };
 
 // Custom Dispatcher to handle deposit notifications into the token contract
