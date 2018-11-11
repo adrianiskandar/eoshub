@@ -158,6 +158,8 @@ class [[eosio::contract]] eoshub : public eosio::contract {
     [[eosio::action]] void subservice(name client, name service, asset delegateAmount) {
         require_auth(client);
 
+        //todo trigger inline action that settles up rewards for both client/service up to this point
+
         accounts_index accounts(_self,  _self.value);
         auto clientitr = accounts.find(client.value);
         eosio_assert(clientitr != accounts.end(), "account not found");
@@ -190,6 +192,10 @@ class [[eosio::contract]] eoshub : public eosio::contract {
 
     // unregapikey unstakes an amount of eoshub with the service
     [[eosio::action]] void unsubservice(name client, name service, uint64_t registrationId) {
+        require_auth(client);
+
+        //todo trigger inline action that settles up rewards for both client/service up to this point
+
         accounts_index accounts(_self,  _self.value);
         auto clientitr = accounts.find(client.value);
         eosio_assert(clientitr != accounts.end(), "account not found");
