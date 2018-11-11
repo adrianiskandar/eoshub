@@ -15,7 +15,7 @@ class services extends Component {
 
   render() {
     return (
-      <div>
+      <div class="utilization">
         <Navigation />
         <h1 style={{margin: "30px 20px 10px 30px"}}>My API usage</h1>
         <UtilizationCard img={img} title={"Elastic API"} desc={"API leveraging Elastic Search to provide a seach engine for decentralized applications"}></UtilizationCard>

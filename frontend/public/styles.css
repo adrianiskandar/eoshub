@@ -81,3 +81,7 @@ body {
   -ms-touch-action: pan-x;
   touch-action: pan-x;
 }
+
+.utilization .card {
+  min-height: 300px;
+}
