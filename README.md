@@ -41,13 +41,4 @@ withdraw your unstaked EOSHUB back to your account balance
 ### deposithub
 Notification handler listening for transfers on the eosio.token contract.
 
-# Use
-
-After making an account and paying for service subscriptions, developers can install the API of their choice with one line of code:
-
-```sh
-eoshub install eoshub.co/company/bestapiever.something
-```
-
-Great!
 
