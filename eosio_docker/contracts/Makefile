@@ -18,9 +18,14 @@ deploy: setupkeys
 
 test-deposit:
 	echo "Depositing 5 EOSHUB into contract"
-	$$CLEOS transfer useraaaaaaaa eoshub "5 EOSHUB" "test"
-	$$CLEOS transfer useraaaaaaab eoshub "5 EOSHUB" "test"
+	$$CLEOS transfer useraaaaaaaa eoshub "5 EOSHUB" "test" -p useraaaaaaaa
+	$$CLEOS transfer useraaaaaaab eoshub "5 EOSHUB" "test" -p useraaaaaaab
 
+	echo "Showing accounts"
+	$$CLEOS get currency balance eosio.token useraaaaaaaa EOSHUB
+	$$CLEOS get table eoshub eoshub accounts
+
+test-withdraw:
 	echo "Showing accounts"
 	$$CLEOS get currency balance eosio.token useraaaaaaaa EOSHUB
 	$$CLEOS get table eoshub eoshub accounts	
@@ -30,9 +35,12 @@ test-deposit:
 	$$CLEOS get currency balance eosio.token useraaaaaaaa EOSHUB
 	$$CLEOS get table eoshub eoshub accounts
 
+test-stake:
+	$$CLEOS push action eoshub stake '["useraaaaaaaa", "5.0000 EOSHUB"]' -p useraaaaaaaa@owner
+
 test-subscribe:
 	echo "useraaaaaaaa subscribes to useraaaaaaab w/ 5 EOSHUB of stake"
-	$$CLEOS push action eoshub regapikey '['useraaaaaaaa','useraaaaaaab',"5.0000 EOSHUB"]' -p useraaaaaaaa@owner
+	$$CLEOS push action eoshub subservice '['useraaaaaaaa','useraaaaaaab',"5.0000 EOSHUB"]' -p useraaaaaaaa@owner
 	$$CLEOS get table eoshub eoshub accounts
 	$$CLEOS get table eoshub eoshub subscribers
 
@@ -42,3 +50,4 @@ test-collect:
 	$$CLEOS push action eoshub collectreward '['useraaaaaaab']' -p useraaaaaaab@active
 	echo "useraaaaaaab balance after collect"
 	$$CLEOS get currency balance eosio.token useraaaaaaab EOSHUB
+

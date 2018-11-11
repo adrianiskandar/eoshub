@@ -152,7 +152,7 @@ class [[eosio::contract]] eoshub : public eosio::contract {
     }
 
     // regapikey stakes a certain amount of eoshub with the service tied to an EOS public key
-    [[eosio::action]] void regapikey(name client, name service, asset delegateAmount) {
+    [[eosio::action]] void subservice(name client, name service, asset delegateAmount) {
         require_auth(client);
 
         accounts_index accounts(_self,  _self.value);
@@ -186,7 +186,7 @@ class [[eosio::contract]] eoshub : public eosio::contract {
     }
 
     // unregapikey unstakes an amount of eoshub with the service
-    [[eosio::action]] void unregapikey(name client, name service, uint64_t registrationId) {
+    [[eosio::action]] void unsubservice(name client, name service, uint64_t registrationId) {
         accounts_index accounts(_self,  _self.value);
         auto clientitr = accounts.find(client.value);
         eosio_assert(clientitr != accounts.end(), "account not found");
@@ -301,7 +301,7 @@ class [[eosio::contract]] eoshub : public eosio::contract {
         });
     }
 
-
+    
 };
 
 // Custom Dispatcher to handle deposit notifications into the token contract
@@ -311,7 +311,7 @@ extern "C" {
         {
             switch(action)
             {
-                EOSIO_DISPATCH_HELPER(eoshub, (regservice)(stake)(unstake)(regapikey)(unregapikey)(collectreward)(withdraw) )
+                EOSIO_DISPATCH_HELPER(eoshub, (regservice)(stake)(unstake)(subservice)(unsubservice)(collectreward)(withdraw) )
             }
         }
         else if(code==name("eosio.token").value && action==name("transfer").value) {
