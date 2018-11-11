@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import img from "../img/elasticsearch.jpg";
+import { Api, JsonRpc, RpcError, JsSignatureProvider } from 'eosjs'; // https://github.com/EOSIO/eosjs
 
 import "rc-slider/assets/index.css";
 import Tooltip from "rc-tooltip";
@@ -8,6 +9,11 @@ import Slider from "rc-slider";
 const createSliderWithTooltip = Slider.createSliderWithTooltip;
 const Range = createSliderWithTooltip(Slider.Range);
 const Handle = Slider.Handle;
+
+// eosio endpoint
+const endpoint = "http://localhost:8888";
+const account =  {"name":"useraaaaaaaa", "privateKey":"5K7mtrinTFrVTduSxizUc5hjXJEtTjVTsqSHeBHes1Viep86FP5", "publicKey":"EOS6kYgMTCh1iqpq9XGNQbEi8Q6k5GujefN9DSs55dcjVyFAq7B6b"}
+  ;
 
 class services extends Component {
   constructor() {
@@ -41,6 +47,40 @@ class services extends Component {
   setRequestsPerMinute(value) {
     this.setState({ requests: value });
   }
+
+  async stakeToken(owner, stakeAmount){
+    // eosjs function call: connect to the blockchain
+    const rpc = new JsonRpc(endpoint);
+    const signatureProvider = new JsSignatureProvider([account.privateKey]);
+    const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() });
+    try {
+      const result = await api.transact({
+        actions: [{
+          account: "notechainacc",
+          name: "stake",
+          authorization: [{
+            actor: owner,
+            permission: 'active',
+          }],
+          data: {
+            owner,
+            stakeAmount,
+          },
+        }]
+      }, {
+        blocksBehind: 3,
+        expireSeconds: 30,
+      });
+
+      console.log(result);
+    } catch (e) {
+      console.log('Caught exception: ' + e);
+      if (e instanceof RpcError) {
+        console.log(JSON.stringify(e.json, null, 2));
+      }
+    }
+  }
+  
   render() {
     return (
       <div class="card">
