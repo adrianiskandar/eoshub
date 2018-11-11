@@ -53,7 +53,7 @@ class services extends Component {
             <Slider
               min={1000}
               max={200000}
-              defaultValue={this.state.iniRequests * Math.random()}
+              defaultValue={10000 + Math.round(this.state.iniRequests * Math.random()/10000)*10000}
               handle={this.handle}
             />
           </div>
