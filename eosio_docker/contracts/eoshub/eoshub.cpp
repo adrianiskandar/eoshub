@@ -56,8 +56,6 @@ class [[eosio::contract]] eoshub : public eosio::contract {
         asset balance;
         asset staked_balance;
 
-        asset delegated_balance;
-
         uint64_t last_collection_time;
         auto primary_key() const { return owner.value; }
 
@@ -291,7 +289,6 @@ class [[eosio::contract]] eoshub : public eosio::contract {
                 a.owner = from;
                 a.balance = quantity;
                 a.staked_balance = asset(0, hub_symbol);
-                a.delegated_balance = asset(0, hub_symbol);
                 a.last_collection_time = now();
             });
             return;

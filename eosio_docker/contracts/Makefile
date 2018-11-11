@@ -31,7 +31,14 @@ test-deposit:
 	$$CLEOS get table eoshub eoshub accounts
 
 test-subscribe:
-
+	echo "useraaaaaaaa subscribes to useraaaaaaab w/ 5 EOSHUB of stake"
+	$$CLEOS push action eoshub regapikey '['useraaaaaaaa','useraaaaaaab',"5.0000 EOSHUB"]' -p useraaaaaaaa@owner
+	$$CLEOS get table eoshub eoshub accounts
+	$$CLEOS get table eoshub eoshub subscribers
 
 test-collect:
+	echo "useraaaaaaab balance before collect"
+	$$CLEOS get currency balance eosio.token useraaaaaaab EOSHUB
 	$$CLEOS push action eoshub collectreward '['useraaaaaaab']' -p useraaaaaaab@active
+	echo "useraaaaaaab balance after collect"
+	$$CLEOS get currency balance eosio.token useraaaaaaab EOSHUB
