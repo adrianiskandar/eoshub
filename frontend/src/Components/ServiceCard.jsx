@@ -13,7 +13,7 @@ class services extends Component {
   constructor() {
     super();
     this.state = {
-      iniRequests: 120000,
+      iniRequests: 50000,
       requests: 50000
     };
     this.setRequestsPerMinute = this.setRequestsPerMinute.bind(this);
@@ -53,11 +53,13 @@ class services extends Component {
             <Slider
               min={1000}
               max={200000}
-              defaultValue={10000 + Math.round(this.state.iniRequests * Math.random()/10000)*10000}
+              defaultValue={
+                10000 + Math.round((this.state.iniRequests * Math.random()) / 10000) * 10000
+              }
               handle={this.handle}
             />
           </div>
-          <a id="elastic" class="btn btn-primary" style={{color: 'white'}}>
+          <a id="elastic" class="btn btn-primary" style={{ color: "white" }}>
             Stake {parseFloat(this.state.requests * 0.000001).toFixed(4)} EOSHUB tokens
           </a>
         </div>
