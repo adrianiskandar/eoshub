@@ -9,13 +9,37 @@ EOS hub multiplies efficiency and value by providing developers the opportunity 
 
 ## Smart contract
 
-The smart contract can be found at `eosio_docker/contracts/eoshub/eoshub.cpp` .
+The smart contract can be found at [`eosio_docker/contracts/eoshub/eoshub.cpp`](https://github.com/eoshubco/eoshub/blob/master/eosio_docker/contracts/eoshub/eoshub.cpp) .
 
 Functionalities:
 
-- one
-- two;
-- three.
+### regservice
+This registers a service listing to be shown on the website
+
+### stake 
+This stakes EOSHUB on your account balance within our smart contract.  Staked balances can be used to subscribe to API services.
+
+
+### unstake
+Unstake starts the unstaking process.  For the purposes of the hackathon this is instantaneous, but in practice it would be set to 1 month.
+
+
+### subservice
+This creates a subscription to a service with a given amount of your staked balance to spend.  
+
+### unsubservice
+Allows you to unsubscribe from a service (erases a single subscription record)
+
+### collectreward
+
+Collect Reward triggers a payout based on your proportional distribution of the reward.  We compute the annual inflation rate as inflation per second, and then compute the earnings since the last time you called collectreward (or triggered it via another action).
+
+
+### withdraw 
+withdraw your unstaked EOSHUB back to your account balance
+
+### deposithub
+Notification handler listening for transfers on the eosio.token contract.
 
 # Use
 
